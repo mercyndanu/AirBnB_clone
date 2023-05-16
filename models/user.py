@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 '''
-    Implementation of the User class modelfrom BaseModel
+    Implementation of the User class model from BaseModel
 '''
 from models.base_model import BaseModel
 
