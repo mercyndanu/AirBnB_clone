@@ -47,7 +47,7 @@ class HBNBCommand(cmd.Cmd):
             new_instance = eval(args[0])()
             new_instance.save()
             print(new_instance.id)
-        except:
+        except NameError:
             print("** class doesn't exist **")
 
     def do_show(self, args):
@@ -115,19 +115,19 @@ class HBNBCommand(cmd.Cmd):
         storage = FileStorage()
         storage.reload()
         objects = storage.all()
-        try:
-            if len(args) != 0:
-                eval(args)
-        except NameError:
-            print("** class doesn't exist **")
-            return
-        for key, val in objects.items():
-            if len(args) != 0:
-                if type(val) is eval(args):
-                    obj_list.append(val)
-            else:
-                obj_list.append(val)
-         print(obj_list)
+        if len(args) != 0:
+            try:
+                class_name = eval(args)
+            except NameError:
+                print("** class doesn't exist **")
+                return
+            for val in objects.values():
+                if isinstance(val, class_name):
+                    obj_list.append(str(val))
+        else:
+            for val in objects.values():
+                obj_list.append(str(val))
+        print(obj_list)
 
     def do_update(self, args):
         '''
@@ -211,7 +211,7 @@ class HBNBCommand(cmd.Cmd):
             cmd_arg = args[0] + " " + args[2]
             func = functions[args[1]]
             func(cmd_arg)
-        except:
+        except SyntaxError:
             print("*** Unknown syntax:", args[0])
 
 
