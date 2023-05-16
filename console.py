@@ -47,7 +47,6 @@ class HBNBCommand(cmd.Cmd):
             new_instance = eval(args[0])()
             new_instance.save()
             print(new_instance.id)
-
         except:
             print("** class doesn't exist **")
 
@@ -128,8 +127,7 @@ class HBNBCommand(cmd.Cmd):
                     obj_list.append(val)
             else:
                 obj_list.append(val)
-
-        print(obj_list)
+         print(obj_list)
 
     def do_update(self, args):
         '''
