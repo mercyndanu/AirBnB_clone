@@ -5,6 +5,7 @@ FileStorage module
 
 
 import models
+from models.base_model import BaseModel
 import json
 import os
 
@@ -42,11 +43,9 @@ class FileStorage:
         """Deserializes the JSON file to __objects"""
         if not os.path.isfile(self.__file_path):
             return
-        with open(self.__file_path, "r") as f:
+        with open(self.__file_path, 'r') as f:
             obj_dict = json.load(f)
-            for key, obj_data in obj_dict.items():
-                class_name, obj_id = key.split(".")
-                module = __import__(class_name)
-                class_ = getattr(module, class_name)
-                obj = class_(**obj_data)
+            for key, value in obj_dict.items():
+                class_name = value.get('__class__')
+                obj = eval(class_name + '(**value)')
                 self.__objects[key] = obj
