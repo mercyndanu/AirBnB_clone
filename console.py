@@ -21,15 +21,15 @@ class HBNBCommand(cmd.Cmd):
     '''
 
     prompt = ("(hbnb) ")
-    class_names = [
-            BaseModel,
-            User,
-            State,
-            City,
-            Amenity,
-            Place,
-            Review
-            ]
+    class_names = {
+            "BaseModel": BaseModel,
+            "User": User,
+            "State": State,
+            "City": City,
+            "Amenity": Amenity,
+            "Place": Place,
+            "Review": Review
+            }
 
     def do_quit(self, args):
         '''
@@ -53,14 +53,12 @@ class HBNBCommand(cmd.Cmd):
             return
         try:
             args = shlex.split(args)
-            class_name = args_list[0]
+            class_name = args[0]
             if class_name in self.class_names:
-                class_ = eval(class_name)
+                class_ = self.class_names[class_name]
                 new_instance = class_()
                 new_instance.save()
                 print(new_instance.id)
-            else:
-                print("** class doesn't exist **")
         except NameError:
             print("** class doesn't exist **")
 
@@ -74,27 +72,20 @@ class HBNBCommand(cmd.Cmd):
         obj_dict = storage.all()
 
         args_list = shlex.split(args)
-        if len(args) == 0:
+        if not args_list:
             print("** class name missing **")
-            return
-        if len(args) == 1:
+        if len(args_list) == 1:
             print("** instance id missing **")
             return
-        try:
-            class_name = args_list[0]
-            if class_name in self.class_names:
-                class_ = eval(class_name)
-                if issubclass(class_, BaseModel):
-                    key = "{}.{}".format(class_name, args_list[1])
-                    if key in obj_dict:
-                        print(obj_dict[key])
-                    else:
-                        print("** no instance found **")
-                else:
-                    print("** class doesn't exist **")
+        class_name = args_list[0]
+        if class_name in self.class_names:
+            class_ = self.class_names[class_name]
+            key = "{}.{}".format(class_name, args_list[1])
+            if key in obj_dict:
+                print(obj_dict[key])
             else:
-                print("** class doesn't exist **")
-        except NameError:
+                print("** no instance found **")
+        else:
             print("** class doesn't exist **")
 
     def do_destroy(self, args):
@@ -114,7 +105,7 @@ class HBNBCommand(cmd.Cmd):
         storage.reload()
         obj_dict = storage.all()
         try:
-            class_ = eval(class_name)
+            class_ = self.class_names[class_name]
             if class_name in self.class_names\
                     and issubclass(class_, BaseModel):
                 key = "{}.{}".format(class_name, class_id)
@@ -133,28 +124,23 @@ class HBNBCommand(cmd.Cmd):
             Prints all string representation of all instances
             based or not on the class name.
         '''
-        obj_list = []
         storage = FileStorage()
         storage.reload()
-        objects = storage.all()
-        if len(args) != 0:
-            try:
-                class_name = args
-                if class_name in self.class_names:
-                    class_ = eval(class_name)
-                    for val in objects.values():
-                        if isinstance(val, class_):
-                            obj_list.append(str(val))
-                        else:
-                            print("** class doesn't exist **")
-                            return
-            except NameError:
-                print("** class doesn't exist **")
-                return
+        obj_dict = storage.all()
+
+        args_list = shlex.split(args)
+        if not args_list:
+            instance_list = list(obj_dict.values())
+            print([str(instance) for instance in instance_list])
         else:
-            for val in objects.values():
-                obj_list.append(str(val))
-        print(obj_list)
+            class_name = args_list[0]
+            if class_name in self.class_names:
+                class_ = self.class_names[class_name]
+                instance_list = [str(obj) for obj in obj_dict.values()
+                                 if obj.__class__.__name__ == class_name]
+                print(instance_list)
+            else:
+                print("** class doesn't exist **")
 
     def do_update(self, args):
         '''
