@@ -55,7 +55,7 @@ class HBNBCommand(cmd.Cmd):
             args = shlex.split(args)
             class_name = args_list[0]
             class_ = eval(class_name)
-            if  issubclass(clas_, BaseModel):
+            if  issubclass(class_, BaseModel):
                 new_instance = class_()
                 new_instance.save()
                 print(new_instance.id)
