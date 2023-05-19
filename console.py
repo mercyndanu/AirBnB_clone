@@ -54,8 +54,8 @@ class HBNBCommand(cmd.Cmd):
         try:
             args = shlex.split(args)
             class_name = args_list[0]
-            class_ = eval(class_name)
-            if  issubclass(class_, BaseModel):
+            if class_name in self.class_names:
+                class_ = eval(class_name)
                 new_instance = class_()
                 new_instance.save()
                 print(new_instance.id)
@@ -69,28 +69,33 @@ class HBNBCommand(cmd.Cmd):
             Print the string representation of an instance baed on
             the class name and id given as args.
         '''
-        args = shlex.split(args)
+        storage = FileStorage()
+        storage.reload()
+        obj_dict = storage.all()
+
+        args_list = shlex.split(args)
         if len(args) == 0:
             print("** class name missing **")
             return
         if len(args) == 1:
             print("** instance id missing **")
             return
-        storage = FileStorage()
-        storage.reload()
-        obj_dict = storage.all()
         try:
-            eval(args[0])
+            class_name = args_list[0]
+            if class_name in self.class_names:
+                class_ = eval(class_name)
+                if issubclass(class_, BaseModel):
+                    key = "{}.{}".format(class_name, args_list[1])
+                    if key in obj_dict:
+                        print(obj_dict[key])
+                    else:
+                        print("** no instance found **")
+                else:
+                    print("** class doesn't exist **")
+            else:
+                print("** class doesn't exist **")
         except NameError:
             print("** class doesn't exist **")
-            return
-        key = args[0] + "." + args[1]
-        key = args[0] + "." + args[1]
-        try:
-            value = obj_dict[key]
-            print(value)
-        except KeyError:
-            print("** no instance found **")
 
     def do_destroy(self, args):
         '''
@@ -109,16 +114,19 @@ class HBNBCommand(cmd.Cmd):
         storage.reload()
         obj_dict = storage.all()
         try:
-            eval(class_name)
+            class_ = eval(class_name)
+            if class_name in self.class_names\
+                    and issubclass(class_, BaseModel):
+                key = "{}.{}".format(class_name, class_id)
+                if key in obj_dict:
+                    del obj_dict[key]
+                    storage.save()
+                else:
+                    print("** no instance found **")
+            else:
+                print("** class doesn't exist **")
         except NameError:
             print("** class doesn't exist **")
-            return
-        key = class_name + "." + class_id
-        try:
-            del obj_dict[key]
-        except KeyError:
-            print("** no instance found **")
-        storage.save()
 
     def do_all(self, args):
         '''
@@ -131,13 +139,18 @@ class HBNBCommand(cmd.Cmd):
         objects = storage.all()
         if len(args) != 0:
             try:
-                class_name = eval(args)
+                class_name = args
+                if class_name in self.class_names:
+                    class_ = eval(class_name)
+                    for val in objects.values():
+                        if isinstance(val, class_):
+                            obj_list.append(str(val))
+                        else:
+                            print("** class doesn't exist **")
+                            return
             except NameError:
                 print("** class doesn't exist **")
                 return
-            for val in objects.values():
-                if isinstance(val, class_name):
-                    obj_list.append(str(val))
         else:
             for val in objects.values():
                 obj_list.append(str(val))
@@ -164,7 +177,12 @@ class HBNBCommand(cmd.Cmd):
             print("** value missing **")
             return
         try:
-            eval(args[0])
+            class_name = args[0]
+            if class_name in self.class_names:
+                eval(class_name)
+            else:
+                print("** class doesn't exist **")
+                return
         except NameError:
             print("** class doesn't exist **")
             return
