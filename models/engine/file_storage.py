@@ -5,15 +5,9 @@ FileStorage module
 
 
 import models
-from models.base_model import BaseModel
-from models.user import User
-from models.state import State
-from models.city import City
-from models.amenity import Amenity
-from models.place import Place
-from models.review import Review
 import json
 import os
+from models.base_model import BaseModel
 
 
 class FileStorage:
@@ -30,7 +24,7 @@ class FileStorage:
 
     def all(self):
         """Returns the dictionary __objects"""
-        return self.__objects
+        return self.__objects.copy()
 
     def new(self, obj):
         """Sets in __objects the obj with key <obj class name>.id"""
@@ -49,9 +43,17 @@ class FileStorage:
         """Deserializes the JSON file to __objects"""
         if not os.path.isfile(self.__file_path):
             return
+        class_names = [cls for cls in dir(FileStorage)
+                       if isinstance(getattr(FileStorage, cls), type)]
+        class_map = {cls: getattr(models, cls)
+                     for cls in class_names if cls != 'BaseModel'}
         with open(self.__file_path, 'r') as f:
             obj_dict = json.load(f)
             for key, value in obj_dict.items():
                 class_name = value.get('__class__')
-                obj = eval(class_name + '(**value)')
-                self.__objects[key] = obj
+                if class_name == 'BaseModel':
+                    obj = BaseModel(**value)
+                elif class_name in class_map:
+                    obj_class = class_map[class_name]
+                    obj = obj_class(**value)
+                    self.__objects[key] = obj
