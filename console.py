@@ -62,29 +62,32 @@ class HBNBCommand(cmd.Cmd):
         except NameError:
             print("** class doesn't exist **")
 
-    def do_show(self, args):
+    def do_show(self, arg):
         '''
             Print the string representation of an instance baed on
             the class name and id given as args.
         '''
-        storage = FileStorage()
-        storage.reload()
-        obj_dict = storage.all()
-
-        args_list = shlex.split(args)
-        if not args_list:
+        if len(arg) == 0:
             print("** class name missing **")
-        if len(args_list) == 1:
-            print("** instance id missing **")
             return
-        class_name = args_list[0]
+
+        args = shlex.split(arg)
+        class_name = args[0]
+
         if class_name in self.class_names:
-            class_ = self.class_names[class_name]
-            key = "{}.{}".format(class_name, args_list[1])
-            if key in obj_dict:
-                print(obj_dict[key])
+            if len(args) > 1:
+                instance_id = args[1]
+                key = "{}.{}".format(class_name, instance_id)
+                storage = FileStorage()
+                storage.reload()
+                obj_dict = storage.all()
+
+                if key in obj_dict:
+                    print(obj_dict[key])
+                else:
+                    print("** no instance found **")
             else:
-                print("** no instance found **")
+                print("** instance id missing **")
         else:
             print("** class doesn't exist **")
 
@@ -119,7 +122,7 @@ class HBNBCommand(cmd.Cmd):
         except NameError:
             print("** class doesn't exist **")
 
-    def do_all(self, args):
+    def do_all(self, arg):
         '''
             Prints all string representation of all instances
             based or not on the class name.
@@ -128,17 +131,18 @@ class HBNBCommand(cmd.Cmd):
         storage.reload()
         obj_dict = storage.all()
 
-        args_list = shlex.split(args)
-        if not args_list:
-            instance_list = list(obj_dict.values())
-            print([str(instance) for instance in instance_list])
+        if len(arg) == 0:
+            instances = list(obj_dict.values())
+            print([str(instance) for instance in instances])
         else:
-            class_name = args_list[0]
+            args = shlex.split(arg)
+            class_name = args[0]
+
             if class_name in self.class_names:
-                class_ = self.class_names[class_name]
-                instance_list = [str(obj) for obj in obj_dict.values()
-                                 if obj.__class__.__name__ == class_name]
-                print(instance_list)
+                instances = [str(obj_dict[key]) for key in
+                             obj_dict.keys() if
+                             key.startswith(class_name + ".")]
+                print(instances)
             else:
                 print("** class doesn't exist **")
 
