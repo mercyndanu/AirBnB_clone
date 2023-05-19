@@ -21,6 +21,15 @@ class HBNBCommand(cmd.Cmd):
     '''
 
     prompt = ("(hbnb) ")
+    class_names = [
+            BaseModel,
+            User,
+            State,
+            City,
+            Amenity,
+            Place,
+            Review
+            ]
 
     def do_quit(self, args):
         '''
@@ -44,9 +53,14 @@ class HBNBCommand(cmd.Cmd):
             return
         try:
             args = shlex.split(args)
-            new_instance = eval(args[0])()
-            new_instance.save()
-            print(new_instance.id)
+            class_name = args_list[0]
+            class_ = eval(class_name)
+            if  issubclass(clas_, BaseModel):
+                new_instance = class_()
+                new_instance.save()
+                print(new_instance.id)
+            else:
+                print("** class doesn't exist **")
         except NameError:
             print("** class doesn't exist **")
 
