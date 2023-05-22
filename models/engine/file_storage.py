@@ -8,6 +8,12 @@ import models
 import json
 import os
 from models.base_model import BaseModel
+from models.user import User
+from models.state import State
+from models.city import City
+from models.amenity import Amenity
+from models.place import Place
+from models.review import Review
 
 
 class FileStorage:
@@ -43,17 +49,9 @@ class FileStorage:
         """Deserializes the JSON file to __objects"""
         if not os.path.isfile(self.__file_path):
             return
-        class_names = [cls for cls in dir(FileStorage)
-                       if isinstance(getattr(FileStorage, cls), type)]
-        class_map = {cls: getattr(models, cls)
-                     for cls in class_names if cls != 'BaseModel'}
         with open(self.__file_path, 'r') as f:
             obj_dict = json.load(f)
             for key, value in obj_dict.items():
-                class_name = value.get('__class__')
-                if class_name == 'BaseModel':
-                    obj = BaseModel(**value)
-                elif class_name in class_map:
-                    obj_class = class_map[class_name]
-                    obj = obj_class(**value)
-                    self.__objects[key] = obj
+                class_name = value['__class__']
+                del value['__class__']
+                self.new(eval(class_name)(**value))
