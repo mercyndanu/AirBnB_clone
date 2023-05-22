@@ -130,7 +130,7 @@ class HBNBCommand(cmd.Cmd):
         storage = FileStorage()
         storage.reload()
         obj_dict = storage.all()
-        
+
         args = shlex.split(arg)
         if len(args) == 0:
             instances = list(obj_dict.values())
